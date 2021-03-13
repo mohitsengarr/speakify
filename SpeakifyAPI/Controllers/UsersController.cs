@@ -4,35 +4,33 @@ using SpeakifyAPI.Services;
 using SpeakifyAPI.Utility;
 using System;
 
-
 namespace SpeakifyAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SystemUsersController : ControllerBase
+    public class UsersController : ControllerBase
     {
-        public SystemUsersController(ISystemUserService Service)
+        public UsersController(IUsersService Service)
         {
-            SystemUserService = Service;
+            UsersService = Service;
         }
-        public ISystemUserService SystemUserService { get; set; }
+        public IUsersService UsersService { get; set; }
 
-        // GET: api/SystemUsers
+        // GET: api/Users
         [HttpGet]
         public IActionResult Get()
         {
-            var result = SystemUserService.ListSystemUsers();
+            var result = UsersService.ListUsers();
             return Ok(new { data = result });
-            
         }
 
-        // GET api/SystemUsers/{guid}
+        // GET api/Users/{guid}
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
             try
             {
-                var result = SystemUserService.SystemUserByID(new Guid(id));
+                var result = UsersService.UserByID(new Guid(id));
                 return Ok(new { data = result, status = StatusMessages.Success });
             }
             catch
@@ -42,9 +40,9 @@ namespace SpeakifyAPI.Controllers
             return Ok(new { data = string.Empty, status = StatusMessages.Error_UserNotFound });
         }
 
-        // POST api/SystemUsers
+        // POST api/Users
         [HttpPost]
-        public IActionResult Post([FromBody] SystemUserModel model)
+        public IActionResult Post([FromBody] UserModel model)
         {
             try
             {
@@ -55,7 +53,7 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Update
-                        int update = SystemUserService.UpdateSystemUsers(model);
+                        int update = UsersService.SaveUsers(model);
                         return Ok(new { data = string.Empty, status = StatusMessages.Get(update) });
                     }
                     else
@@ -67,7 +65,7 @@ namespace SpeakifyAPI.Controllers
                 else
                 {
                     //Insert 
-                    int create = SystemUserService.CreateSystemUsers(model);
+                    int create = UsersService.SaveUsers(model);
                     return Ok(new { data = string.Empty, status = StatusMessages.Get(create) });
                 }
             }
@@ -78,9 +76,9 @@ namespace SpeakifyAPI.Controllers
             return Ok(new { data = string.Empty, status = StatusMessages.Error_Failed });
         }
 
-        // POST api/SystemUserRemove/{guid}
-        [HttpPost("SystemUserRemove")]
-        public IActionResult SystemUserRemove(string id)
+        // POST api/UserRemove/{guid}
+        [HttpPost("UserRemove")]
+        public IActionResult UserRemove(string id)
         {
             try
             {
@@ -91,7 +89,7 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Delete
-                        int delete = SystemUserService.DeleteSystemUsers(userid);
+                        int delete = UsersService.DeleteUser(userid);
                         return Ok(new { data = string.Empty, status = StatusMessages.Get(delete) });
                     }
                     else
@@ -105,9 +103,9 @@ namespace SpeakifyAPI.Controllers
                     //Passed User ID is empty guid
                     return Ok(new { data = string.Empty, status = StatusMessages.Error_UserDeleteFailed_GUID });
                 }
-                
+
             }
-            catch 
+            catch
             {
             }
             return Ok(new { data = string.Empty, status = StatusMessages.Error_Failed });

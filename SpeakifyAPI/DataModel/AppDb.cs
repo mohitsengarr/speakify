@@ -1,7 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 
-namespace TweeterSMAPI.DataModel
+namespace SpeakifyAPI.DataModel
 {
     public class AppDb : IDisposable
     {

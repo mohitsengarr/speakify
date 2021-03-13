@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace TweeterSMAPI.Model
+namespace SpeakifyAPI.Model
 {
     public class SystemUserModel
     {

@@ -1,10 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
+
 
 #nullable disable
 
-namespace TweeterSMAPI.DataModel
+namespace SpeakifyAPI.DataModel
 {
     public partial class socmed8_devContext : DbContext
     {

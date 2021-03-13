@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+
 
 #nullable disable
 
-namespace TweeterSMAPI.DataModel
+namespace SpeakifyAPI.DataModel
 {
     public partial class UserInterest
     {

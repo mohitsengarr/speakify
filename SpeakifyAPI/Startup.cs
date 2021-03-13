@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TweeterSMAPI.DataModel;
-using TweeterSMAPI.Services;
+using SpeakifyAPI.DataModel;
+using SpeakifyAPI.Services;
 
-namespace TweeterSMAPI
+namespace SpeakifyAPI
 {
     public class Startup
     {
@@ -49,6 +49,7 @@ namespace TweeterSMAPI
 
             services.AddTransient<AppDb>(db => new AppDb(Configuration["ConnectionStrings:DefaultConnection"]));
             services.AddScoped<ISystemUserService, SystemUserService>();
+            services.AddScoped<IUsersService, UsersService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
