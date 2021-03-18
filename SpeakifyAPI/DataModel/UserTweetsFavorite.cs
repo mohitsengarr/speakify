@@ -1,14 +1,11 @@
-﻿using System;
-
-
-#nullable disable
-
+﻿
 namespace SpeakifyAPI.DataModel
 {
     public partial class UserTweetsFavorite
     {
-        public Guid Id { get; set; }
-        public Guid TweetsId { get; set; }
-        public Guid UserId { get; set; }
+        public string Id { get; set; }
+        public string TweetsId { get; set; }
+        public string UserId { get; set; }
+        public bool IsArchived { get; set; }
     }
 }

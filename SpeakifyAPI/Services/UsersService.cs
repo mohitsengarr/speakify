@@ -9,105 +9,122 @@ namespace SpeakifyAPI.Services
     public interface IUsersService
     {
         List<User> ListUsers();
-        User UserByID(Guid id);
-        int SaveUsers(UserModel model);
-        int DeleteUser(Guid id);
+        User UserByID(string id);
+        APIReturnModel SaveUsers(UserModel model);
+        APIReturnModel DeleteUser(string id);
     }
     public class UsersService : IUsersService
     {
-        public UsersService(socmed8_devContext dbcontext)
+        public UsersService(SpeakifyDbContext dbcontext)
         {
-            db = dbcontext;
+            Db = dbcontext;
         }
-        public socmed8_devContext db { get; set; }
-
+        private SpeakifyDbContext Db { get; set; }
+       
         public List<User> ListUsers()
         {
-            return db.Users.ToList();
+            return Db.Users.Where(d => d.IsArchived == false).ToList();
         }
-        public User UserByID(Guid id)
+        public User UserByID(string id)
         {
-            return db.Users.FirstOrDefault(d => d.Id == id);
+            return Db.Users.FirstOrDefault(d => d.Id == id);
         }
         /// <summary>
-        /// 1= Success, 0= Failed
+        /// 1= Success, 0= Failed, 4= Not Found
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public int SaveUsers(UserModel model)
+        public APIReturnModel SaveUsers(UserModel model)
         {
             try
             {
                 User userdetails = new User();
+                bool isupdate = false;
+                //Check user id is provided
                 if (!string.IsNullOrEmpty(model.Id))
                 {
-                    Guid userid = new Guid(model.Id);
-                    userdetails = db.Users.FirstOrDefault(d => d.Id == userid);
-                    userdetails.UpdatedAt = DateTime.Now;
+                    //Check user id exists in db
+                    SystemUser chkexisting = Db.SystemUsers.FirstOrDefault(d => d.Id == model.Id && !d.IsArchived);
+                    if (chkexisting != null)
+                    {
+                        userdetails = Db.Users.FirstOrDefault(d => d.Id == model.Id);
+
+                        if (userdetails == null)
+                        {
+                            userdetails = new User
+                            {
+                                CreatedAt = DateTime.Now,
+                                Id = model.Id
+                            };
+                        }
+                        else
+                        {
+                            isupdate = true;
+                            userdetails.UpdatedAt = DateTime.Now;
+                        }
+                        userdetails.IsArchived = false;
+                        userdetails.VideoTweets = model.VideoTweets;
+                        userdetails.DisplayBestTweetsFirst = model.DisplayBestTweetsFirst;
+                        userdetails.DisplayNotifications = model.DisplayNotifications;
+                        userdetails.IsVerified = model.IsVerified;
+                        userdetails.Birthday = model.Birthday;
+                        userdetails.Country = model.Country;
+                        userdetails.CoverImage = model.CoverImage;
+                        userdetails.DescriptionBio = model.DescriptionBio;
+                        userdetails.FollowersCount = model.FollowersCount;
+                        userdetails.FollowRequestsSent = model.FollowRequestsSent;
+                        userdetails.FriendsCount = model.FriendsCount;
+                        userdetails.Link = model.Link;
+                        userdetails.Location = model.Location;
+                        userdetails.Name = model.Name;
+                        userdetails.ProfileImage = model.ProfileImage;
+                        userdetails.ScreenName = model.ScreenName;
+                        userdetails.ThemeColor = model.ThemeColor;
+                        userdetails.Website = model.Website;
+
+                        if (!isupdate)
+                            Db.Users.Add(userdetails);
+                        Db.SaveChanges();
+                        return new APIReturnModel { Status = 1, Value = model.Id };
+                    }
+                    else
+                        return new APIReturnModel { Status = 4 };
                 }
                 else
-                {
-                    userdetails.Id = Guid.NewGuid();
-                    userdetails.CreatedAt = DateTime.Now;
-                }
-                userdetails.Birthday = model.Birthday;
-                userdetails.Country = model.Country;
-                userdetails.CoverImage = model.CoverImage;
-
-                userdetails.DescriptionBio = model.DescriptionBio;
-                userdetails.DisplayBestTweetsFirst = model.DisplayBestTweetsFirst;
-                userdetails.DisplayNotifications = model.DisplayNotifications;
-                userdetails.FollowersCount = model.FollowersCount;
-                userdetails.FollowRequestsSent = model.FollowRequestsSent;
-                userdetails.FriendsCount = model.FriendsCount;
-                userdetails.IsVerified = model.IsVerified;
-                userdetails.Link = model.Link;
-                userdetails.Location = model.Location;
-                userdetails.Name = model.Name;
-                userdetails.ProfileImage = model.ProfileImage;
-                userdetails.ScreenName = model.ScreenName;
-                userdetails.ThemeColor = model.ThemeColor;
-                userdetails.VideoTweets = model.VideoTweets;
-                userdetails.Website = model.Website;
-
-                if (!string.IsNullOrEmpty(model.Id))
-                {
-                    db.Users.Add(userdetails);
-                }
-                db.SaveChanges();
-                return 1;
+                    return new APIReturnModel { Status = 4 };
+                
             }
-            catch
+            catch (Exception ex)
             {
-                return 0;
+                return new APIReturnModel { Status = 0 };
             }
         }
-        
+
         /// <summary>
-        /// 1= Success, 0= Failed, 2= User not Found
+        /// 1= Success, 0= Failed, 4= User not Found
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public int DeleteUser(Guid id)
+        public APIReturnModel DeleteUser(string id)
         {
             try
             {
-                User userdetails = db.Users.FirstOrDefault(d => d.Id == id);
+                User userdetails = Db.Users.FirstOrDefault(d => d.Id == id);
                 if (userdetails != null)
                 {
                     ///TODO : Check all references of user in other tables before deletion
-                    ///TODO : Can user be deleted in the system?
-                    db.Users.Remove(userdetails);
-                    db.SaveChanges();
-                    return 1;
+
+                    userdetails.IsArchived = true;
+                    Db.SaveChanges();
+                    return new APIReturnModel { Status = 1 };
                 }
                 else
-                    return 2;
+                    return new APIReturnModel { Status = 4 };
             }
             catch
             {
             }
-            return 0;
+            return new APIReturnModel { Status = 0 };
         }
     }
 }

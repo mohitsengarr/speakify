@@ -8,29 +8,29 @@ namespace SpeakifyAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UserSettingsController : ControllerBase
     {
-        public UsersController(IUsersService Service)
+        public UserSettingsController(IUserSettingsService Service)
         {
-            UsersService = Service;
+            UserSettingsService = Service;
         }
-        private IUsersService UsersService { get; set; }
+        private IUserSettingsService UserSettingsService { get; set; }
 
-        // GET: api/Users
+        // GET: api/UserSettings
         [HttpGet]
         public IActionResult Get()
         {
-            var result = UsersService.ListUsers();
+            var result = UserSettingsService.ListUserSettings();
             return Ok(new { data = result });
         }
 
-        // GET api/Users/{guid}
+        // GET api/UserSettings/{guid}
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
             try
             {
-                var result = UsersService.UserByID(id);
+                var result = UserSettingsService.UserSettingsByID(id);
                 return Ok(new { data = result, status = StatusMessages.Success });
             }
             catch
@@ -40,9 +40,9 @@ namespace SpeakifyAPI.Controllers
             return Ok(new { data = string.Empty, status = StatusMessages.Error_UserNotFound });
         }
 
-        // POST api/Users
+        // POST api/UserSettings
         [HttpPost]
-        public IActionResult Post([FromBody] UserModel model)
+        public IActionResult Post([FromBody] UserSettingsModel model)
         {
             try
             {
@@ -53,8 +53,8 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Update
-                        APIReturnModel update = UsersService.SaveUsers(model);
-                        return Ok(new { data = string.Empty, status = StatusMessages.Get(update.Status) });
+                        APIReturnModel update = UserSettingsService.SaveUserSettings(model);
+                        return Ok(new { data = update.Value, status = StatusMessages.Get(update.Status) });
                     }
                     else
                     {
@@ -65,8 +65,8 @@ namespace SpeakifyAPI.Controllers
                 else
                 {
                     //Insert 
-                    APIReturnModel create = UsersService.SaveUsers(model);
-                    return Ok(new { data = string.Empty, status = StatusMessages.Get(create.Status) });
+                    APIReturnModel create = UserSettingsService.SaveUserSettings(model);
+                    return Ok(new { data = create.Value, status = StatusMessages.Get(create.Status) });
                 }
             }
             catch
@@ -76,7 +76,7 @@ namespace SpeakifyAPI.Controllers
             return Ok(new { data = string.Empty, status = StatusMessages.Error_Failed });
         }
 
-        // POST api/UserRemove/{guid}
+        // POST api/UserSettings/UserRemove/{guid}
         [HttpPost("UserRemove")]
         public IActionResult UserRemove(string id)
         {
@@ -89,7 +89,7 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Delete
-                        APIReturnModel delete = UsersService.DeleteUser(id);
+                        APIReturnModel delete = UserSettingsService.DeleteUserSettings(id);
                         return Ok(new { data = string.Empty, status = StatusMessages.Get(delete.Status) });
                     }
                     else

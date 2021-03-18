@@ -4,7 +4,6 @@ using SpeakifyAPI.Services;
 using SpeakifyAPI.Utility;
 using System;
 
-
 namespace SpeakifyAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -15,7 +14,7 @@ namespace SpeakifyAPI.Controllers
         {
             SystemUserService = Service;
         }
-        public ISystemUserService SystemUserService { get; set; }
+        private ISystemUserService SystemUserService { get; set; }
 
         // GET: api/SystemUsers
         [HttpGet]
@@ -32,10 +31,10 @@ namespace SpeakifyAPI.Controllers
         {
             try
             {
-                var result = SystemUserService.SystemUserByID(new Guid(id));
+                var result = SystemUserService.SystemUserByID(id);
                 return Ok(new { data = result, status = StatusMessages.Success });
             }
-            catch
+            catch (Exception)
             {
             }
 
@@ -55,8 +54,8 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Update
-                        int update = SystemUserService.UpdateSystemUsers(model);
-                        return Ok(new { data = string.Empty, status = StatusMessages.Get(update) });
+                        APIReturnModel update = SystemUserService.UpdateSystemUsers(model);
+                        return Ok(new { data = update.Value, status = StatusMessages.Get(update.Status) });
                     }
                     else
                     {
@@ -67,8 +66,8 @@ namespace SpeakifyAPI.Controllers
                 else
                 {
                     //Insert 
-                    int create = SystemUserService.CreateSystemUsers(model);
-                    return Ok(new { data = string.Empty, status = StatusMessages.Get(create) });
+                    APIReturnModel create = SystemUserService.CreateSystemUsers(model);
+                    return Ok(new { data = create.Value, status = StatusMessages.Get(create.Status) });
                 }
             }
             catch
@@ -91,8 +90,8 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Delete
-                        int delete = SystemUserService.DeleteSystemUsers(userid);
-                        return Ok(new { data = string.Empty, status = StatusMessages.Get(delete) });
+                        APIReturnModel delete = SystemUserService.DeleteSystemUsers(id);
+                        return Ok(new { data = delete.Value, status = StatusMessages.Get(delete.Status) });
                     }
                     else
                     {

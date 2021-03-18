@@ -1,17 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-
-#nullable disable
-
 namespace SpeakifyAPI.DataModel
 {
-    public partial class socmed8_devContext : DbContext
+    public partial class SpeakifyDbContext : DbContext
     {
-        public socmed8_devContext()
+        public SpeakifyDbContext()
         {
         }
 
-        public socmed8_devContext(DbContextOptions<socmed8_devContext> options)
+        public SpeakifyDbContext(DbContextOptions<SpeakifyDbContext> options)
             : base(options)
         {
         }
@@ -23,7 +20,7 @@ namespace SpeakifyAPI.DataModel
         public virtual DbSet<SystemUser> SystemUsers { get; set; }
         public virtual DbSet<Tweet> Tweets { get; set; }
         public virtual DbSet<TweetsHashtag> TweetsHashtags { get; set; }
-        public virtual DbSet<TweetsMedium> TweetsMedia { get; set; }
+        public virtual DbSet<TweetsMedia> TweetsMedia { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserContact> UserContacts { get; set; }
         public virtual DbSet<UserInterest> UserInterests { get; set; }
@@ -33,11 +30,10 @@ namespace SpeakifyAPI.DataModel
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-//            if (!optionsBuilder.IsConfigured)
-//            {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-//                optionsBuilder.UseMySql("server=127.0.0.1;user id=paul;password=Pass123!@#;port=3306;database=socmed8_dev", Microsoft.EntityFrameworkCore.ServerVersion.FromString("8.0.23-mysql"));
-//            }
+            if (!optionsBuilder.IsConfigured)
+            {
+
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -46,9 +42,9 @@ namespace SpeakifyAPI.DataModel
             {
                 entity.ToTable("followers");
 
-                entity.HasIndex(e => e.FollowedId, "followed_user_users_idx");
+                entity.HasIndex(e => e.FollowedId, "followed_user_map_idx");
 
-                entity.HasIndex(e => e.FollowerId, "follower_user_users_idx");
+                entity.HasIndex(e => e.FollowerId, "follower_user_idx");
 
                 entity.Property(e => e.Id)
                     .ValueGeneratedNever()
@@ -61,14 +57,23 @@ namespace SpeakifyAPI.DataModel
                     .HasColumnName("created_at");
 
                 entity.Property(e => e.FollowedId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("followed_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.FollowerId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("follower_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
+
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.UpdatedAt)
                     .HasColumnType("datetime")
@@ -78,13 +83,13 @@ namespace SpeakifyAPI.DataModel
                     .WithMany(p => p.FollowerFolloweds)
                     .HasForeignKey(d => d.FollowedId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("followed_user_users");
+                    .HasConstraintName("followed_user_map");
 
                 entity.HasOne(d => d.FollowerNavigation)
                     .WithMany(p => p.FollowerFollowerNavigations)
                     .HasForeignKey(d => d.FollowerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("follower_user_users");
+                    .HasConstraintName("follower_user_map");
             });
 
             modelBuilder.Entity<Hashtag>(entity =>
@@ -102,6 +107,11 @@ namespace SpeakifyAPI.DataModel
                     .HasColumnName("hashtag")
                     .HasCharSet("utf8")
                     .HasCollation("utf8_general_ci");
+
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
             });
 
             modelBuilder.Entity<InterestCategory>(entity =>
@@ -181,7 +191,7 @@ namespace SpeakifyAPI.DataModel
                 entity.ToTable("system_users");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -208,6 +218,11 @@ namespace SpeakifyAPI.DataModel
                     .HasColumnName("first_name")
                     .HasCharSet("utf8")
                     .HasCollation("utf8_general_ci");
+
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.LastName)
                     .HasColumnType("varchar(100)")
@@ -244,10 +259,10 @@ namespace SpeakifyAPI.DataModel
             {
                 entity.ToTable("tweets");
 
-                entity.HasIndex(e => e.UserId, "user_tweet_idx");
+                entity.HasIndex(e => e.UserId, "users_tweets_map_idx");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -259,14 +274,21 @@ namespace SpeakifyAPI.DataModel
                 entity.Property(e => e.FavoriteCount).HasColumnName("favorite_count");
 
                 entity.Property(e => e.InReplyToStatus)
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("in_reply_to_status")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.InReplyToUser)
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("in_reply_to_user")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
+
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.PlaceCountry)
                     .HasColumnType("varchar(100)")
@@ -277,6 +299,7 @@ namespace SpeakifyAPI.DataModel
                 entity.Property(e => e.ReplyCount).HasColumnName("reply_count");
 
                 entity.Property(e => e.RetweetedFrom)
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("retweeted_from")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -293,6 +316,8 @@ namespace SpeakifyAPI.DataModel
                     .HasColumnName("updated_at");
 
                 entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("user_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -301,25 +326,32 @@ namespace SpeakifyAPI.DataModel
                     .WithMany(p => p.Tweets)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("user_tweet");
+                    .HasConstraintName("users_tweets_map");
             });
 
             modelBuilder.Entity<TweetsHashtag>(entity =>
             {
                 entity.ToTable("tweets_hashtag");
 
-                entity.HasIndex(e => e.TweetsId, "hashtag_tweets_idx");
+                entity.HasIndex(e => e.HashtagId, "hashtag_tweets_map_idx");
 
                 entity.HasIndex(e => e.Id, "id_UNIQUE")
                     .IsUnique();
 
-                entity.HasIndex(e => e.HashtagId, "tweets_hashtag_idx");
+                entity.HasIndex(e => e.TweetsId, "tweets_hastag_map_idx");
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.HashtagId).HasColumnName("hashtag_id");
 
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
+
                 entity.Property(e => e.TweetsId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("tweets_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -328,25 +360,30 @@ namespace SpeakifyAPI.DataModel
                     .WithMany(p => p.TweetsHashtags)
                     .HasForeignKey(d => d.HashtagId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("tweets_hashtag");
+                    .HasConstraintName("hashtag_tweets_map");
 
                 entity.HasOne(d => d.Tweets)
                     .WithMany(p => p.TweetsHashtags)
                     .HasForeignKey(d => d.TweetsId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("hashtag_tweets");
+                    .HasConstraintName("tweets_hastag_map");
             });
 
-            modelBuilder.Entity<TweetsMedium>(entity =>
+            modelBuilder.Entity<TweetsMedia>(entity =>
             {
                 entity.ToTable("tweets_media");
 
                 entity.HasIndex(e => e.Id, "id_UNIQUE")
                     .IsUnique();
 
-                entity.HasIndex(e => e.TweetsId, "media_tweets_idx");
+                entity.HasIndex(e => e.TweetsId, "tweets_media_map_idx");
 
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.Media)
                     .HasColumnType("varchar(300)")
@@ -367,6 +404,8 @@ namespace SpeakifyAPI.DataModel
                     .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.TweetsId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("tweets_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -381,7 +420,7 @@ namespace SpeakifyAPI.DataModel
                     .WithMany(p => p.TweetsMedia)
                     .HasForeignKey(d => d.TweetsId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("media_tweets");
+                    .HasConstraintName("tweets_media_map");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -389,7 +428,7 @@ namespace SpeakifyAPI.DataModel
                 entity.ToTable("users");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -424,11 +463,13 @@ namespace SpeakifyAPI.DataModel
 
                 entity.Property(e => e.DisplayBestTweetsFirst)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("display_best_tweets_first");
+                    .HasColumnName("display_best_tweets_first")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.DisplayNotifications)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("display_notifications");
+                    .HasColumnName("display_notifications")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.FollowRequestsSent).HasColumnName("follow_requests_sent");
 
@@ -436,9 +477,15 @@ namespace SpeakifyAPI.DataModel
 
                 entity.Property(e => e.FriendsCount).HasColumnName("friends_count");
 
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
+
                 entity.Property(e => e.IsVerified)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("is_verified");
+                    .HasColumnName("is_verified")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.Link)
                     .HasColumnType("varchar(100)")
@@ -484,7 +531,8 @@ namespace SpeakifyAPI.DataModel
 
                 entity.Property(e => e.VideoTweets)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("video_tweets");
+                    .HasColumnName("video_tweets")
+                    .HasConversion<bool>();
 
                 entity.Property(e => e.Website)
                     .HasColumnType("varchar(100)")
@@ -496,15 +544,17 @@ namespace SpeakifyAPI.DataModel
                     .WithOne(p => p.User)
                     .HasForeignKey<User>(d => d.Id)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("user_system_user");
+                    .HasConstraintName("users_systemusers_map");
             });
 
             modelBuilder.Entity<UserContact>(entity =>
             {
                 entity.ToTable("user_contacts");
 
+                entity.HasIndex(e => e.UserId, "users_contacts_map_idx");
+
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -528,10 +578,23 @@ namespace SpeakifyAPI.DataModel
                     .HasCharSet("utf8")
                     .HasCollation("utf8_general_ci");
 
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
+
                 entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("user_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserContacts)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("users_contacts_map");
             });
 
             modelBuilder.Entity<UserInterest>(entity =>
@@ -542,10 +605,10 @@ namespace SpeakifyAPI.DataModel
 
                 entity.HasIndex(e => e.InterestSubcategoryId, "sub_category_interest_idx");
 
-                entity.HasIndex(e => e.UserId, "user_user_interest_idx");
+                entity.HasIndex(e => e.UserId, "users_interest_map_idx");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -560,7 +623,14 @@ namespace SpeakifyAPI.DataModel
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
+
                 entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("user_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -581,29 +651,38 @@ namespace SpeakifyAPI.DataModel
                     .WithMany(p => p.UserInterests)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("user_user_interest");
+                    .HasConstraintName("users_interest_map");
             });
 
             modelBuilder.Entity<UserMention>(entity =>
             {
                 entity.ToTable("user_mentions");
 
-                entity.HasIndex(e => e.TweetId, "tweet_user_mention_idx");
+                entity.HasIndex(e => e.TweetId, "tweets_mention_map_idx");
 
-                entity.HasIndex(e => e.UserId, "user_user_mention_idx");
+                entity.HasIndex(e => e.UserId, "user_mention_map_idx");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
+
                 entity.Property(e => e.TweetId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("tweet_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("user_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -619,47 +698,56 @@ namespace SpeakifyAPI.DataModel
                     .WithMany(p => p.UserMentions)
                     .HasForeignKey(d => d.TweetId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("tweet_user_mention");
+                    .HasConstraintName("tweets_mention_map");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.UserMentions)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("user_user_mention");
+                    .HasConstraintName("user_mention_map");
             });
 
             modelBuilder.Entity<UserSetting>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("user_settings");
 
                 entity.HasIndex(e => e.Id, "id_idx");
 
-                entity.Property(e => e.EmailNewNotification)
-                    .HasColumnType("bit(1)")
-                    .HasColumnName("email_new_notification");
-
-                entity.Property(e => e.EmailNotification)
-                    .HasColumnType("bit(1)")
-                    .HasColumnName("email_notification");
-
                 entity.Property(e => e.Id)
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
+                entity.Property(e => e.EmailNewNotification)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("email_new_notification")
+                     .HasConversion<bool>();
+
+                entity.Property(e => e.EmailNotification)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("email_notification")
+                     .HasConversion<bool>();
+
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                     .HasConversion<bool>();
+
                 entity.Property(e => e.NotificationMuteNewAccount)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("notification_mute_new_account");
+                    .HasColumnName("notification_mute_new_account")
+                     .HasConversion<bool>();
 
                 entity.Property(e => e.NotificationMuteWhoDontFollow)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("notification_mute_who_dont_follow");
+                    .HasColumnName("notification_mute_who_dont_follow")
+                     .HasConversion<bool>();
 
                 entity.Property(e => e.NotificationMuteYouDontFollow)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("notification_mute_you_dont_follow");
+                    .HasColumnName("notification_mute_you_dont_follow")
+                     .HasConversion<bool>();
 
                 entity.Property(e => e.PrivacyPhotoTagging)
                     .HasColumnType("varchar(200)")
@@ -669,17 +757,19 @@ namespace SpeakifyAPI.DataModel
 
                 entity.Property(e => e.PrivacyTweetLocation)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("privacy_tweet_location");
+                    .HasColumnName("privacy_tweet_location")
+                     .HasConversion<bool>();
 
                 entity.Property(e => e.PrivacyTweetPrivacy)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("privacy_tweet_privacy");
+                    .HasColumnName("privacy_tweet_privacy")
+                     .HasConversion<bool>();
 
                 entity.HasOne(d => d.IdNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.Id)
+                    .WithOne(p => p.UserSetting)
+                    .HasForeignKey<UserSetting>(d => d.Id)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("user_settings_system_user");
+                    .HasConstraintName("user_settings_map");
             });
 
             modelBuilder.Entity<UserTweetsFavorite>(entity =>
@@ -690,17 +780,26 @@ namespace SpeakifyAPI.DataModel
                     .IsUnique();
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
+                entity.Property(e => e.IsArchived)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("is_archived")
+                    .HasConversion<bool>();
+
                 entity.Property(e => e.TweetsId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("tweets_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasColumnType("varchar(36)")
                     .HasColumnName("user_id")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");

@@ -9,58 +9,66 @@ namespace SpeakifyAPI.Services
     public interface ISystemUserService
     {
         List<SystemUser> ListSystemUsers();
-        SystemUser SystemUserByID(Guid id);
-        int CreateSystemUsers(SystemUserModel model);
-        int UpdateSystemUsers(SystemUserModel model);
-        int DeleteSystemUsers(Guid id);
+        SystemUser SystemUserByID(string id);
+        APIReturnModel CreateSystemUsers(SystemUserModel model);
+        APIReturnModel UpdateSystemUsers(SystemUserModel model);
+        APIReturnModel DeleteSystemUsers(string id);
         bool IsUserNameExists(string username);
         bool IsEmailExists(string email);
     }
     public class SystemUserService : ISystemUserService
     {
-        public SystemUserService(socmed8_devContext dbcontext)
+        public SystemUserService(SpeakifyDbContext dbcontext)
         {
-            db = dbcontext;
+            Db = dbcontext;           
         }
-        public socmed8_devContext db { get; set; }
+        private SpeakifyDbContext Db { get; set; }      
 
         public List<SystemUser> ListSystemUsers()
         {
-            return db.SystemUsers.ToList();
+            return Db.SystemUsers.Where(d=>d.IsArchived==false).ToList();
         }
-        public SystemUser SystemUserByID(Guid id)
+        public SystemUser SystemUserByID(string id)
         {
-            return db.SystemUsers.FirstOrDefault(d=>d.Id==id);
+            return Db.SystemUsers.FirstOrDefault(d=>d.Id==id);
         }
         /// <summary>
         /// 1= Success, 0= Failed, 2= Username Exists, 3= Email Exists
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public int CreateSystemUsers(SystemUserModel model)
+        public APIReturnModel CreateSystemUsers(SystemUserModel model)
         {
             try
             {
                 if (IsUserNameExists(model.Username))
-                    return 2;
-                if (IsEmailExists(model.Email))
-                    return 3;
-                db.SystemUsers.Add(new SystemUser
                 {
-                    Id = Guid.NewGuid(),
+                    return new APIReturnModel { Status = 2};
+                }
+                if (IsEmailExists(model.Email))
+                {
+                    return new APIReturnModel { Status = 3 };
+                }
+                SystemUser user = new SystemUser
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Address = model.Address,
                     CreatedAt = DateTime.Now,
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Phone = model.Phone,
-                    Username = model.Username
-                });
-                return 1;
+                    Username = model.Username,
+                    PasswordHash = model.PasswordHash,
+                    IsArchived =false
+                };
+                Db.SystemUsers.Add(user);
+                Db.SaveChanges();
+                return new APIReturnModel { Status = 1, Value= user.Id.ToString() };
             }
-            catch
+            catch (Exception)
             {
-                return 0;
+                return new APIReturnModel { Status = 0 };
             }
         }
         /// <summary>
@@ -68,17 +76,21 @@ namespace SpeakifyAPI.Services
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public int UpdateSystemUsers(SystemUserModel model)
+        public APIReturnModel UpdateSystemUsers(SystemUserModel model)
         {
             try
             {
                 if (IsUserNameExists(model.Username))
-                    return 2;
+                {
+                    return new APIReturnModel { Status = 2 };
+                }
                 if (IsEmailExists(model.Email))
-                    return 3;
+                {
+                    return new APIReturnModel { Status = 3 };
+                }
 
                 Guid userid = new Guid(model.Id);
-                SystemUser userdetails = db.SystemUsers.FirstOrDefault(d => d.Id == userid);
+                SystemUser userdetails = Db.SystemUsers.FirstOrDefault(d => d.Id == model.Id);                
                 if (userdetails != null)
                 {
                     userdetails.Address = model.Address;
@@ -86,16 +98,16 @@ namespace SpeakifyAPI.Services
                     userdetails.FirstName = model.FirstName;
                     userdetails.LastName = model.LastName;
                     userdetails.Phone = model.Phone;
-                    db.SaveChanges();
+                    Db.SaveChanges();
 
-                    return 1;
+                    return new APIReturnModel { Status = 1 ,Value=model.Id};
                 }
                 else
-                    return 4;
+                    return new APIReturnModel { Status = 4 };
             }
             catch
             {
-                return 0;
+                return new APIReturnModel { Status = 0 };
             }
         }
         /// <summary>
@@ -103,33 +115,32 @@ namespace SpeakifyAPI.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public int DeleteSystemUsers(Guid id)
+        public APIReturnModel DeleteSystemUsers(string id)
         {
             try
             {
-                SystemUser userdetails = db.SystemUsers.FirstOrDefault(d => d.Id == id);
+                SystemUser userdetails = Db.SystemUsers.FirstOrDefault(d => d.Id == id);
                 if (userdetails != null)
                 {
                     ///TODO : Check all references of user in other tables before deletion
-                    ///TODO : Can user be deleted in the system?
-                    db.SystemUsers.Remove(userdetails);
-                    db.SaveChanges();
-                    return 1;
+                    userdetails.IsArchived =true;
+                    Db.SaveChanges();
+                    return new APIReturnModel { Status = 1,Value=id.ToString() };
                 }
                 else
-                    return 4;
+                    return new APIReturnModel { Status = 4 };
             }
             catch
             {
             }
-            return 0;
+            return new APIReturnModel { Status = 0 };
         }
 
         public bool IsUserNameExists(string username)
         {
             try
             {
-                SystemUser getuser = db.SystemUsers.FirstOrDefault(d => d.Username == username);
+                SystemUser getuser = Db.SystemUsers.FirstOrDefault(d => d.Username == username);
                 if (getuser != null)
                     return true;
             }
@@ -142,7 +153,7 @@ namespace SpeakifyAPI.Services
         {
             try
             {
-                SystemUser getuser = db.SystemUsers.FirstOrDefault(d => d.Email == email);
+                SystemUser getuser = Db.SystemUsers.FirstOrDefault(d => d.Email == email);
                 if (getuser != null)
                     return true;
             }

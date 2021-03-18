@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using SpeakifyAPI.DataModel;
 using SpeakifyAPI.Services;
 
@@ -19,7 +20,6 @@ namespace SpeakifyAPI
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
 
@@ -32,8 +32,7 @@ namespace SpeakifyAPI
                  .AllowAnyHeader()
                 );
             });
-            services.AddDbContext<socmed8_devContext>(options =>
-      options.UseMySQL(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<SpeakifyDbContext>(options => options.UseMySQL(Configuration.GetConnectionString("DefaultConnection")));
             services.Configure<FormOptions>(o =>
             {
                 o.ValueLengthLimit = int.MaxValue;
@@ -41,18 +40,20 @@ namespace SpeakifyAPI
                 o.MemoryBufferThreshold = int.MaxValue;
             });
 
-            //services.AddDbContext<socmed8_devContext>(
-            //    options => options.UseMySQL(Configuration.GetConnectionString("DefaultConnection"),
-            //        mysqlOptions => mysqlOptions.MaxBatchSize(1000000)),
-            //    ServiceLifetime.Scoped);
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Speakify API", Version = "v1" });
+            });
+           
 
-            services.AddTransient<AppDb>(db => new AppDb(Configuration["ConnectionStrings:DefaultConnection"]));
             services.AddScoped<ISystemUserService, SystemUserService>();
             services.AddScoped<IUsersService, UsersService>();
+            services.AddScoped<IUserSettingsService, UserSettingsService>();
+            services.AddScoped<ITweetsServices, TweetsServices>();
+            services.AddScoped<IUserContactsService, UserContactsService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -60,7 +61,14 @@ namespace SpeakifyAPI
                 app.UseDeveloperExceptionPage();
             }
             app.UseCors("CorsPolicy");
+
             app.UseRouting();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("v1/swagger.json", "Speakify V1");
+            });
 
             app.UseAuthorization();
 

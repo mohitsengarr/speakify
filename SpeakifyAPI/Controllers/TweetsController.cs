@@ -8,29 +8,29 @@ namespace SpeakifyAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class TweetsController : ControllerBase
     {
-        public UsersController(IUsersService Service)
+        public TweetsController(ITweetsServices Service)
         {
-            UsersService = Service;
+            TweetsServices = Service;
         }
-        private IUsersService UsersService { get; set; }
+        private ITweetsServices TweetsServices { get; set; }
 
-        // GET: api/Users
+        // GET: api/Tweets
         [HttpGet]
         public IActionResult Get()
         {
-            var result = UsersService.ListUsers();
+            var result = TweetsServices.ListTweets();
             return Ok(new { data = result });
         }
 
-        // GET api/Users/{guid}
+        // GET api/Tweets/{guid}
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
             try
             {
-                var result = UsersService.UserByID(id);
+                var result = TweetsServices.TweetsByID(id);
                 return Ok(new { data = result, status = StatusMessages.Success });
             }
             catch
@@ -40,9 +40,9 @@ namespace SpeakifyAPI.Controllers
             return Ok(new { data = string.Empty, status = StatusMessages.Error_UserNotFound });
         }
 
-        // POST api/Users
+        // POST api/Tweets
         [HttpPost]
-        public IActionResult Post([FromBody] UserModel model)
+        public IActionResult Post([FromBody] TweetsModel model)
         {
             try
             {
@@ -53,8 +53,8 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Update
-                        APIReturnModel update = UsersService.SaveUsers(model);
-                        return Ok(new { data = string.Empty, status = StatusMessages.Get(update.Status) });
+                        APIReturnModel update = TweetsServices.SaveTweets(model);
+                        return Ok(new { data =update.Value, status = StatusMessages.Get(update.Status) });
                     }
                     else
                     {
@@ -65,8 +65,8 @@ namespace SpeakifyAPI.Controllers
                 else
                 {
                     //Insert 
-                    APIReturnModel create = UsersService.SaveUsers(model);
-                    return Ok(new { data = string.Empty, status = StatusMessages.Get(create.Status) });
+                    APIReturnModel create = TweetsServices.SaveTweets(model);
+                    return Ok(new { data = create.Value, status = StatusMessages.Get(create.Status) });
                 }
             }
             catch
@@ -76,9 +76,9 @@ namespace SpeakifyAPI.Controllers
             return Ok(new { data = string.Empty, status = StatusMessages.Error_Failed });
         }
 
-        // POST api/UserRemove/{guid}
-        [HttpPost("UserRemove")]
-        public IActionResult UserRemove(string id)
+        // POST api/Tweets/TweetsRemove/{guid}
+        [HttpPost("TweetsRemove")]
+        public IActionResult TweetsRemove(string id)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace SpeakifyAPI.Controllers
                     if (userid != Guid.Empty)
                     {
                         //Delete
-                        APIReturnModel delete = UsersService.DeleteUser(id);
+                        APIReturnModel delete = TweetsServices.DeleteTweets(id);
                         return Ok(new { data = string.Empty, status = StatusMessages.Get(delete.Status) });
                     }
                     else

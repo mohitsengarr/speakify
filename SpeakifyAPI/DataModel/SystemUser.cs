@@ -1,12 +1,10 @@
 ﻿using System;
 
-#nullable disable
-
 namespace SpeakifyAPI.DataModel
 {
     public partial class SystemUser
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
@@ -16,7 +14,9 @@ namespace SpeakifyAPI.DataModel
         public string PasswordHash { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public bool IsArchived { get; set; }
 
         public virtual User User { get; set; }
+        public virtual UserSetting UserSetting { get; set; }
     }
 }

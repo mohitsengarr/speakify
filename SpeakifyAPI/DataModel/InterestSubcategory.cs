@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace SpeakifyAPI.DataModel
 {
     public partial class InterestSubcategory
@@ -16,7 +14,7 @@ namespace SpeakifyAPI.DataModel
         public Guid CategoryId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public ulong IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         public virtual InterestCategory Category { get; set; }
         public virtual ICollection<UserInterest> UserInterests { get; set; }

@@ -1,7 +1,5 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-#nullable disable
 
 namespace SpeakifyAPI.DataModel
 {
@@ -14,6 +12,7 @@ namespace SpeakifyAPI.DataModel
 
         public long Id { get; set; }
         public string Hashtag1 { get; set; }
+        public bool IsArchived { get; set; }
 
         public virtual ICollection<TweetsHashtag> TweetsHashtags { get; set; }
     }

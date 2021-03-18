@@ -1,7 +1,7 @@
 ﻿
-namespace SpeakifyAPI.DataModel
+namespace SpeakifyAPI.Model
 {
-    public partial class UserSetting
+    public class UserSettingsModel
     {
         public string Id { get; set; }
         public bool PrivacyTweetPrivacy { get; set; }
@@ -12,8 +12,6 @@ namespace SpeakifyAPI.DataModel
         public bool NotificationMuteYouDontFollow { get; set; }
         public bool NotificationMuteWhoDontFollow { get; set; }
         public bool NotificationMuteNewAccount { get; set; }
-        public bool IsArchived { get; set; }
-
-        public virtual SystemUser IdNavigation { get; set; }
+       
     }
 }

@@ -162,3 +162,10 @@ D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\obj\Debug\net5.0\SpeakifyAPI.dl
 D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\obj\Debug\net5.0\ref\SpeakifyAPI.dll
 D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\obj\Debug\net5.0\SpeakifyAPI.pdb
 D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\obj\Debug\net5.0\SpeakifyAPI.genruntimeconfig.cache
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\bin\Debug\net5.0\Microsoft.OpenApi.dll
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\bin\Debug\net5.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\bin\Debug\net5.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\bin\Debug\net5.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\obj\Debug\net5.0\SpeakifyAPI.MvcApplicationPartsAssemblyInfo.cs
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\bin\Debug\net5.0\AutoMapper.dll
+D:\Works\SpeakifyAPI_Master\speakify\SpeakifyAPI\bin\Debug\net5.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

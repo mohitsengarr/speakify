@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace SpeakifyAPI.DataModel
 {
     public partial class User
@@ -12,11 +10,12 @@ namespace SpeakifyAPI.DataModel
             FollowerFolloweds = new HashSet<Follower>();
             FollowerFollowerNavigations = new HashSet<Follower>();
             Tweets = new HashSet<Tweet>();
+            UserContacts = new HashSet<UserContact>();
             UserInterests = new HashSet<UserInterest>();
             UserMentions = new HashSet<UserMention>();
         }
 
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public string ScreenName { get; set; }
         public string Link { get; set; }
@@ -28,20 +27,22 @@ namespace SpeakifyAPI.DataModel
         public string CoverImage { get; set; }
         public string ProfileImage { get; set; }
         public string ThemeColor { get; set; }
-        public ulong? VideoTweets { get; set; }
-        public ulong? DisplayBestTweetsFirst { get; set; }
-        public ulong? DisplayNotifications { get; set; }
-        public ulong? IsVerified { get; set; }
+        public bool? VideoTweets { get; set; }
+        public bool? DisplayBestTweetsFirst { get; set; }
+        public bool? DisplayNotifications { get; set; }
+        public bool? IsVerified { get; set; }
         public int? FollowersCount { get; set; }
         public int? FriendsCount { get; set; }
         public int? FollowRequestsSent { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public bool IsArchived { get; set; }
 
         public virtual SystemUser IdNavigation { get; set; }
         public virtual ICollection<Follower> FollowerFolloweds { get; set; }
         public virtual ICollection<Follower> FollowerFollowerNavigations { get; set; }
         public virtual ICollection<Tweet> Tweets { get; set; }
+        public virtual ICollection<UserContact> UserContacts { get; set; }
         public virtual ICollection<UserInterest> UserInterests { get; set; }
         public virtual ICollection<UserMention> UserMentions { get; set; }
     }
